@@ -5,8 +5,8 @@ current_path = os.path.dirname(os.path.abspath( __file__ ))
 parent_path = os.path.join(current_path, '..')
 
 class ruleBase:
-    # region = 'gs' or 'jl'
     def __init__(self, region):
+        # Region can only be 'gs' or 'jl'
         assert region == 'gs' or region == 'jl', 'region should be \'gs\' or \'jl\''
 
         self.region = region
@@ -18,14 +18,15 @@ class ruleBase:
         self.sentence_dict_filename = os.path.join(current_path, 'save/rulebase_sent_dict_' + region + '.json')
         self.word_dict_filename = os.path.join(current_path, 'save/rulebase_word_dict_' + region + '.json')
 
+        # If there is a dictionary created
         if os.path.isfile(self.sentence_dict_filename) and os.path.isfile(self.word_dict_filename):
             self.load_dict()
-            print('load complete!')
+            print('Load dictionary for %s' % self.region)
         else:
-            self.make_dict()
-            print('make & load complete!')
+            self.create_dict()
+            print('Create and load dictionary for %s' % self.region)
 
-    def make_dict(self):
+    def create_dict(self):
         with open(self.sentence_data_filename) as sentence_data_file:
             sentence_list = json.load(sentence_data_file)
 
@@ -65,11 +66,54 @@ class ruleBase:
         with open(self.word_dict_filename) as word_dict_file:
             self.word_dict = json.load(word_dict_file)
 
+    def get_score(self, sentence, sentence_id_list):
+        score = 0
+        word_list = sentence.split()
+        word_list = set(word_list)
+        sentence_list_size = len(sentence_id_list)
+
+        for sentence_id in sentence_id_list:
+            target_word_list = self.sent_dict[sentence_id]['standard_word_list']
+            score += len(word_list & set(target_word_list))
+        
+        return score / sentence_list_size
+
     def inference_word(self, word, sentence='None'):
         if sentence == 'None':
-            pass
+            # Probably not used code.
+            max_sentence_list_len = 0
+            word_infer = ''
+            if word in self.word_dict:
+                dialect_word_dict = self.word_dict[word]
+                for dialect_word in dialect_word_dict.keys():
+                    sentence_id_list = dialect_word_dict[dialect_word]
+                    if len(sentence_id_list) > max_sentence_list_len:
+                        word_infer = dialect_word
+                return word_infer
+            else:
+                return word
         else:
-            pass
+            max_score = 0
+            max_sentence_list_len = 0
+            word_infer = ''
+            if word in self.word_dict:
+                dialect_word_dict = self.word_dict[word]
+                for dialect_word in dialect_word_dict.keys():
+                    sentence_id_list = dialect_word_dict[dialect_word]
+                    score = self.get_score(sentence, sentence_id_list)
+                    if score > max_score:
+                        max_score = score
+                        word_infer = dialect_word
+                    elif score == max_score:
+                        if len(sentence_id_list) > max_sentence_list_len:
+                            word_infer = dialect_word
+                
+                return word_infer
+            else:
+                # If there are no matching words in the dictionary,
+                # just returns a word.
+                # You can use some neural network model for this part.
+                return word
 
     def inference_sentence(self, sentence):
         word_infer_list = list()
