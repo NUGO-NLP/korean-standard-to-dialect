@@ -44,6 +44,9 @@ class ruleBase:
                 sentence_id = word['sentence']
                 standard = word['standard']
                 dialect = word['dialect']
+                
+                if standard == dialect:
+                    continue
 
                 if standard not in self.word_dict:
                     self.word_dict[standard] = dict()
