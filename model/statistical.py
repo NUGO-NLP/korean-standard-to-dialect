@@ -1,4 +1,6 @@
 import os
+import math
+import re
 import json
 from konlpy.tag import Kkma
 
@@ -43,8 +45,8 @@ class statisticalModel:
 
             for sentence in sentence_list:
                 new_sentence = dict()
-                new_sentence['standard_word_list'] = sentence['standard'].split()
-                new_sentence['dialect_word_list'] = sentence['dialect'].split()
+                new_sentence['standard'] = sentence['standard']
+                new_sentence['dialect'] = sentence['dialect']
 
                 self.sent_dict[str(sentence['id'])] = new_sentence
         
@@ -53,8 +55,8 @@ class statisticalModel:
 
             for sentence in sentence_list:
                 new_sentence = dict()
-                new_sentence['standard_word_list'] = sentence['standard'].split()
-                new_sentence['dialect_word_list'] = sentence['dialect'].split()
+                new_sentence['standard'] = sentence['standard']
+                new_sentence['dialect'] = sentence['dialect']
 
                 self.sent_dict_subword[str(sentence['id'])] = new_sentence
 
@@ -124,18 +126,6 @@ class statisticalModel:
         with open(self.word_dict_ex_filename) as word_dict_ex_file:
             self.word_dict_subword = json.load(word_dict_ex_file)
 
-    def get_score(self, sentence, sentence_id_list):
-        score = 0
-        word_list = sentence.split()
-        word_list = set(word_list)
-        sentence_list_size = len(sentence_id_list)
-
-        for sentence_id in sentence_id_list:
-            target_word_list = self.sent_dict[sentence_id]['standard_word_list']
-            score += len(word_list & set(target_word_list))
-        
-        return score / sentence_list_size
-
     def inference_subword(self, word, sentence):
         max_sentence_list_len = 0
         word_infer = ''
@@ -179,6 +169,38 @@ class statisticalModel:
             word_infer = word_infer + subword_infer
         return word_infer
 
+    def dot(self, x, y):
+        ret = 0
+        for i in range(len(x)):
+            ret += x[i] * y[i]
+        return ret
+
+    def dist(self, x):
+        ret = 0
+        for i in range(len(x)):
+            ret += x[i] * x[i]
+        return math.sqrt(ret)
+
+    # Cosine Similarity
+    def get_score(self, sentence, sentence_cmp):
+        word_list = sentence.split()
+        word_list_cmp = sentence_cmp.split()
+
+        word_set = list(set(word_list + word_list_cmp))
+        word_dict = dict()
+        for i in range(len(word_set)):
+            word_dict[word_set[i]] = i
+
+        bow = [0 for i in range(len(word_set))]
+        bow_cmp = [0 for i in range(len(word_set))]
+
+        for word in word_list:
+            bow[word_dict[word]] = bow[word_dict[word]] + 1
+        for word in word_list_cmp:
+            bow_cmp[word_dict[word]] = bow_cmp[word_dict[word]] + 1
+        
+        return self.dot(bow, bow_cmp) / (self.dist(bow) * self.dist(bow_cmp))
+
     def inference_word(self, word, sentence='None'):
         if sentence == 'None':
             # Probably not used code.
@@ -202,15 +224,16 @@ class statisticalModel:
                 dialect_word_dict = self.word_dict[word]
                 for dialect_word in dialect_word_dict.keys():
                     sentence_id_list = dialect_word_dict[dialect_word]
-                    score = self.get_score(sentence, sentence_id_list)
-                    if score > max_score:
-                        max_score = score
-                        word_infer = dialect_word
-                    elif score == max_score:
-                        if len(sentence_id_list) >= max_sentence_list_len:
-                            max_sentence_list_len = len(sentence_id_list)
+                    for sentence_id in sentence_id_list:
+                        sentence_cmp = self.sent_dict[sentence_id]['standard']
+                        score = self.get_score(sentence, sentence_cmp)
+                        if score > max_score:
+                            max_score = score
                             word_infer = dialect_word
-                
+                        elif score == max_score:
+                            if len(sentence_id_list) >= max_sentence_list_len:
+                                max_sentence_list_len = len(sentence_id_list)
+                                word_infer = dialect_word
                 return word_infer
             else:
                 # If there are no matching words in the dictionary,
@@ -219,6 +242,7 @@ class statisticalModel:
                 return self.inference_word_by_subword(word, sentence)
 
     def inference_sentence(self, sentence):
+        sentence = re.sub('[-=+,#/\?:^$.@*\"※~&%ㆍ!』\\‘|\(\)\[\]\<\>`\'…》]', '', sentence)
         word_infer_list = list()
         word_list = sentence.split()
 

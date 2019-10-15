@@ -80,5 +80,6 @@ if __name__ == "__main__":
     #     print('[jl_same] word_accuracy_oov:', word_accuracy_oov(sent_list_same, word_dict_jl))
 
     while True:
-        q = input()
-        print(statistical_model_jl.inference_sentence(q))
+        query = input()
+        print('[gs]', statistical_model_gs.inference_sentence(query))
+        print('[jl]', statistical_model_jl.inference_sentence(query))
