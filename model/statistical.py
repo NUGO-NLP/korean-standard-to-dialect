@@ -4,7 +4,7 @@ import json
 current_path = os.path.dirname(os.path.abspath( __file__ ))
 parent_path = os.path.join(current_path, '..')
 
-class ruleBase:
+class statisticalModel:
     def __init__(self, region):
         # Region can only be 'gs' or 'jl'
         assert region == 'gs' or region == 'jl', 'region should be \'gs\' or \'jl\''
@@ -15,8 +15,8 @@ class ruleBase:
 
         self.sentence_data_filename = os.path.join(parent_path, 'data/sent_' + region + '_train.json')
         self.word_data_filename = os.path.join(parent_path, 'data/word_' + region + '_train.json')
-        self.sentence_dict_filename = os.path.join(current_path, 'save/rulebase_sent_dict_' + region + '.json')
-        self.word_dict_filename = os.path.join(current_path, 'save/rulebase_word_dict_' + region + '.json')
+        self.sentence_dict_filename = os.path.join(current_path, 'save/statistical_sent_dict_' + region + '.json')
+        self.word_dict_filename = os.path.join(current_path, 'save/statistical_word_dict_' + region + '.json')
 
         # If there is a dictionary created
         if os.path.isfile(self.sentence_dict_filename) and os.path.isfile(self.word_dict_filename):
