@@ -1,3 +1,8 @@
+from collections import Counter
+import numpy as np
+from nltk import ngrams
+import nltk.translate.bleu_score as bleu
+
 def word_accuracy_oov(sentence_list, word_dict):
     size = 0
     count = 0
@@ -37,5 +42,22 @@ def sentence_accuracy(sentence_list):
             count = count + 1
     return count / size
 
-def bleu_score(sentence_list):
-    pass
+def bleu_score(sentence_list, n_gram=4):
+    weights = [1./ n_gram for _ in range(n_gram)]
+    
+    try:
+        smt_func = bleu.SmoothingFunction()
+        score = 0.0
+        
+        for _, dia, inf in sentence_list:
+            score += bleu.sentence_bleu([dia.split()],
+                                        inf.split(),
+                                        weights,
+                                        smoothing_function=smt_func.method2)
+        if len(sentence_list) : 
+            return 0
+        else :
+            return score / len(sentence_list)
+    except Exception as ex:
+        print(ex)
+        return 0
