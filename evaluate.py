@@ -54,10 +54,12 @@ def bleu_score(sentence_list, n_gram=4):
                                         inf.split(),
                                         weights,
                                         smoothing_function=smt_func.method2)
-        if len(sentence_list) : 
+        if len(sentence_list) == 0: 
             return 0
         else :
             return score / len(sentence_list)
     except Exception as ex:
         print(ex)
         return 0
+
+
