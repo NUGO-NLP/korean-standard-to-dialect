@@ -45,7 +45,7 @@ def make_sentence_list_same(sent_dict):
     return ret_list
 
 if __name__ == "__main__":
-    
+
     # sent_dict = test_and_write(statistical_model_gs, sent_gs_valid_filename, result_gs_filename)
     # sent_list = make_sentence_list(sent_dict)
     # print('[gs] word_accuracy:', word_accuracy(sent_list))
