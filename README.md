@@ -10,11 +10,11 @@ $ pip3 install -r requirements.txt
 $ python3 main.py --dialect gs --input_level syl
 ```
 
---dialect : Target dialect (default='gs')
---input_level : Input level of train data. Supported input levels are [syl, word, jaso] (default='syl')
---maxlen : Max length of target data (default=110 if input_level=='syl',
-                                     default=30 if input_level=='word')
---train : Adding this will train model
+--dialect : Target dialect (default='gs')  
+--input_level : Input level of train data. Supported input levels are [syl, word, jaso] (default='syl')  
+--maxlen : Max length of target data (default=110 if input_level=='syl',  
+                                     default=30 if input_level=='word')  
+--train : Adding this will train model  
 
 ## 2. Result
 
