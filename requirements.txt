@@ -3,3 +3,5 @@ konlpy==0.5.1
 nltk==3.4.5
 numpy==1.17.2
 six==1.12.0
+torch==1.3.0
+hgtk==0.1.3
